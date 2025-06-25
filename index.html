@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Billboard Blocks</title>
+  <style>
+    #grid {
+      display: grid;
+      grid-template-columns: repeat(100, 10px);
+      grid-template-rows: repeat(100, 10px);
+      width: 1000px;
+      height: 1000px;
+      margin: 20px auto;
+    }
+    .pixel {
+      width: 10px;
+      height: 10px;
+      background: #222;
+      border: 0.5px solid #000;
+      box-sizing: border-box;
+      cursor: pointer;
+      background-size: cover;
+      background-position: center;
+    }
+    .pixel:hover {
+      background-color: #555;
+    }
+  </style>
+</head>
+<body>
+  <div id="grid"></div>
+
+  <script>
+    const grid = document.getElementById("grid");
+
+    fetch("/.netlify/functions/listBlocks")
+      .then(response => response.json())
+      .then(blocksWithImages => {
+        const blockSet = new Set(blocksWithImages);
+
+        for (let i = 0; i < 10000; i++) {
+          const pixel = document.createElement("div");
+          pixel.className = "pixel";
+          pixel.dataset.index = i;
+
+          if (blockSet.has(i)) {
+            pixel.style.backgroundImage = `url(blocks/block${i}.png)`;
+          }
+
+          pixel.onclick = () => alert(`Clicked on block #${i}`);
+
+          grid.appendChild(pixel);
+        }
+      });
+  </script>
+</body>
+</html>
