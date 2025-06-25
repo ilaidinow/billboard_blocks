@@ -1,30 +1,24 @@
-const fs = require("fs");
-const path = require("path");
+import { neon } from '@netlify/neon';
 
-exports.handler = async function(event, context) {
+const sql = neon(); // משתמש ב־NETLIFY_DATABASE_URL
+
+export async function handler(event) {
   try {
-    const blocksDir = path.join(__dirname, "../../blocks");
-    const files = await fs.promises.readdir(blocksDir);
+    const { block_number, image_url, buyer_email } = JSON.parse(event.body);
 
-    const blocks = files
-      .filter(file => file.endsWith(".png") && file.startsWith("block"))
-      .map(file => {
-        const match = file.match(/\d+/);
-        return match ? parseInt(match[0], 10) : null;
-      })
-      .filter(num => num !== null);
+    await sql`
+      INSERT INTO blocks (block_number, image_url, buyer_email)
+      VALUES (${block_number}, ${image_url}, ${buyer_email})
+    `;
 
     return {
       statusCode: 200,
-      body: JSON.stringify(blocks),
-      headers: {
-        "Content-Type": "application/json",
-      },
+      body: JSON.stringify({ success: true }),
     };
-  } catch (error) {
+  } catch (err) {
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: "Error reading blocks directory" }),
+      body: JSON.stringify({ error: err.message }),
     };
   }
-};
+}
